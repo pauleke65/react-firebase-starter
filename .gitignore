@@ -1,0 +1,9 @@
+
+# Dependencies
+node_modules/
+
+# Project build
+dist/
+
+# Linter config
+.eslintrc
