@@ -5,5 +5,9 @@ node_modules/
 # Project build
 dist/
 
-# Linter config
+# Linter config, editor config
 .eslintrc
+.vscode/
+
+# Environment variables
+.env*
