@@ -11,3 +11,9 @@ dist/
 
 # Environment variables
 .env*
+
+# Firestore
+mock-data/
+firestore-debug.log*
+ui-debug.log*
+firebase-debug.log
