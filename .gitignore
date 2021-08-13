@@ -16,4 +16,4 @@ dist/
 mock-data/
 firestore-debug.log*
 ui-debug.log*
-firebase-debug.log
+firebase-debug.log*

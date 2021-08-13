@@ -20,10 +20,13 @@
     "ignorePatterns": ["dist/*.js"],
     "rules": {
         "max-len": ["error", {
-          "ignoreStrings": true,
-          "ignoreTemplateLiterals": true,
-          "ignoreComments": true,
-          "ignorePattern": "^\\s*<.*>\\s*$"
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true,
+            "ignoreComments": true,
+            "ignorePattern": "^\\s*<.*>\\s*$"
+        }],
+        "no-console": ["error", {
+            "allow": ["warn", "error"]
         }],
         "react/prop-types": 0,
         "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
