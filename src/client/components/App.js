@@ -56,7 +56,7 @@ const App = () => {
                           </p>
                           <p className="font-bold text-base text-gray-300 sm:text-xl lg:text-lg xl:text-xl">
                             {loading && 'Loading...'}
-                            {error && 'Nope. You might want to check out the docs for project setup.'}
+                            {(error || (!loading && !value)) && 'Nope. You might want to check out the docs for project setup.'}
                             {value && `Yep! ${value.testValue}`}
                           </p>
                           <div className="mt-10 sm:mt-12">
