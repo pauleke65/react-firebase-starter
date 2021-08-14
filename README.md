@@ -49,7 +49,7 @@ Back to your code editor, open a new terminal. Log into Firebase CLI:
 
 Start connecting your Firebase project:
 ```firebase init```
-and follow the prompts. **When asked if you'd like to overwrite existing files, choose 'No'.**
+and follow the prompts. **When asked if you'd like to overwrite `firestore.rules`, choose 'No'.**
 
 This project is set up to use Firestore, Functions, and Emulators. Make sure you choose these options when prompted by Firebase CLI. Similarly, when asked about which emulators you want to use, choose Auth, Firestore, and Functions.
 
@@ -62,15 +62,9 @@ Then tell Firebase CLI to use that project:
 
 Head over to `/src/firebase.clientApp.js` and add your config object (found in Firebase Console under Project Settings).
 
+Finally, run Emulators with `npm run emulators`. Head over to the browser ([localhost:3000](http://localhost:3000/#/)) and see `Hello from Firestore Emulator` appear there.
 
-`firebase init firestore` to initialize rules and functions
-Set up rules, functions
-
-
-`firebase deploy` to update rules and functions  —  will complain about functions on a free plan
-After that, use emulators for local development instead
-
-
+Congratulations! The setup process is now complete.
 
 ## Usage
 
@@ -84,6 +78,7 @@ After that, use emulators for local development instead
 In another terminal: `npm test`
 
 You should see a list of 3 tests that all pass. 
+
 ### Deploy
 
 ```npm run build```
