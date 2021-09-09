@@ -60,18 +60,22 @@ const App = () => {
                             {value && `Yep! ${value.testValue}`}
                           </p>
                           <div className="mt-10 sm:mt-12">
-                            <button
-                              type="button"
-                              className="inline-flex items-center mr-6 px-2.5 py-1.5 rounded-md shadow bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 focus:ring-offset-gray-900"
+                            <a
+                              href="https://github.com/codebusters-ca/react-firebase-starter#react--firebase-starter"
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center mr-6 px-2.5 py-1.5 rounded-md shadow bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 focus:ring-offset-gray-900"
                             >
                               Quick Start Guide
-                            </button>
-                            <button
-                              type="button"
+                            </a>
+                            <a
+                              href="https://www.codebusters.ca/articles/"
+                              target="_blank"
+                              rel="noreferrer"
                               className="inline-flex items-center px-2.5 py-1.5 rounded-md shadow text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
                             >
                               Firebase Tips
-                            </button>
+                            </a>
                           </div>
                         </div>
                       </div>
