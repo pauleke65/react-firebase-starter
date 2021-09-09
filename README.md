@@ -26,11 +26,11 @@ You will need the following to use this starter:
 ## Setup Guide
 
 Clone this repo:
-```git clone https://github.com/dariatsvetkova/firebase-boilerplate-draft.git```
+```git clone https://github.com/codebusters-ca/react-firebase-starter.git```
 
 
 Install the dependencies:
-```cd .\firebase-boilerplate-draft\ && npm install```
+```cd .\react-firebase-starter\ && npm install```
 
 Do the same in the `/functions` folder to use Firebase cloud functions:
 ```cd functions && npm install```
@@ -45,7 +45,7 @@ You may have noticed that data isn't yet being fetched from Firebase. We need to
 In [Firebase Console](https://console.firebase.google.com), enable Firestore Database and Authentication via Google.
 
 Back to your code editor, open a new terminal. Log into Firebase CLI:
-```cd .\firebase-boilerplate-draft\ && firebase login```
+```cd .\react-firebase-starter\ && firebase login```
 
 Start connecting your Firebase project:
 ```firebase init```
