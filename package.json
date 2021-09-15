@@ -1,7 +1,7 @@
 {
-  "name": "firebase-boilerplate-draft",
+  "name": "react-firebase-starter",
   "version": "1.0.0",
-  "description": "## Quick setup guide Stuff",
+  "description": "Minimal starter for creating web apps with Firebase and React",
   "main": "./src/client/index.js",
   "scripts": {
     "start": "webpack serve --mode development",
@@ -10,7 +10,7 @@
     "test": "mocha --exit"
   },
   "keywords": [],
-  "author": "dariatsvetkova <d.s.tsvetkova@hotmail.com>",
+  "author": "@codebusters-ca",
   "license": "MIT",
   "dependencies": {
     "@headlessui/react": "^1.4.0",
