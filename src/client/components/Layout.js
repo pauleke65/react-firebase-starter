@@ -7,17 +7,17 @@ import {
   Transition,
 } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
-import firebase from '../../firebase/clientApp';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { auth } from '../../firebase/clientApp';
 import { useUser } from './user-context';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-const Layout = ({ children }) => {
+function Layout({ children }) {
   // Google Auth (needs to be enabled in Firebase Console - https://console.firebase.google.com)
-  const auth = firebase.auth();
-  const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+  const googleAuthProvider = new GoogleAuthProvider();
   const { user } = useUser();
 
   return (
@@ -66,7 +66,7 @@ const Layout = ({ children }) => {
                               {({ active }) => (
                                 <button
                                   type="button"
-                                  onClick={() => firebase.auth().signOut()}
+                                  onClick={() => signOut(auth)}
                                   className={classNames(active ? 'bg-gray-100' : '', 'w-full block px-4 py-2 text-base font-medium text-gray-700')}
                                 >
                                   Sign out
@@ -79,7 +79,9 @@ const Layout = ({ children }) => {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => auth.signInWithPopup(googleAuthProvider)}
+                        onClick={
+                          () => signInWithPopup(auth, googleAuthProvider)
+                        }
                         className="inline-flex items-center px-2.5 py-1.5 rounded-md shadow text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
                       >
                         Sign In
@@ -96,6 +98,6 @@ const Layout = ({ children }) => {
 
     </div>
   );
-};
+}
 
 export default Layout;
