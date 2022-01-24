@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import firebase from '../../firebase/clientApp';
+import { auth } from '../../firebase/clientApp';
 
 const UserContext = React.createContext();
 
@@ -8,12 +8,12 @@ function UserProvider({ children }) {
   const [user, setUser] = useLocalStorage('user', {});
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((id) => {
+    auth.onAuthStateChanged((id) => {
       setUser(id);
     });
   }, []);
 
-  const value = { user, setUser };
+  const value = useMemo(() => ({ user, setUser }), []);
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 

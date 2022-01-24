@@ -1,36 +1,39 @@
 const assert = require('assert');
-const firebase = require('@firebase/testing');
-const { QuerySnapshot } = require('@google-cloud/firestore');
+const {
+  assertFails,
+  assertSucceeds,
+  initializeTestEnvironment,
+} = require('@firebase/rules-unit-testing');
+const { doc, setDoc } = require('firebase/firestore');
 
 const MY_PROJECT_ID = 'emulator-rules';
 const myId = 'user_abc';
 const theirId = 'user_xyz';
-const modId = 'user_mod';
-const myAuth = { uid: myId, email: 'abc@gmail.com' };
-const modAuth = { uid: modId, email: 'mod@gmail.com', isModerator: true };
+const myDocId = 'myDoc123';
+const theirDocId = 'theirDoc123';
+
+let testEnv;
 
 // Enforce firestore rules hot update in emulators
 before(async () => {
   const fs = require('fs');
-  await firebase.loadFirestoreRules({
+  testEnv = await initializeTestEnvironment({
     projectId: MY_PROJECT_ID,
-    rules: fs.readFileSync('./firestore.rules', 'utf8'),
+    firestore: {
+      host: 'localhost',
+      port: 8080,
+      rules: fs.readFileSync('./firestore.rules', 'utf8'),
+    },
   });
 });
 
-function getFirestore(auth) {
-  return firebase
-    .initializeTestApp({ projectId: MY_PROJECT_ID, auth })
-    .firestore();
-}
-
-function getAdminFirestore() {
-  return firebase.initializeAdminApp({ projectId: MY_PROJECT_ID }).firestore();
-}
-
 // Clear firestore before each test
 beforeEach(async () => {
-  await firebase.clearFirestoreData({ projectId: MY_PROJECT_ID });
+  await testEnv.clearFirestore({ projectId: MY_PROJECT_ID });
+});
+
+after(async () => {
+  await testEnv.cleanup();
 });
 
 describe('Setup', () => {
@@ -40,28 +43,40 @@ describe('Setup', () => {
 
   // Test firestore rules
   it('Allow a user to edit their own document', async () => {
-    const docId = 'form123';
-    const admin = getAdminFirestore();
-    await admin
-      .collection('test_documents')
-      .doc(docId)
-      .set({ content: 'before', authorId: myId });
+    const user = await testEnv.authenticatedContext(myId);
 
-    const db = getFirestore(myAuth);
-    const testDoc = db.collection('test_documents').doc(docId);
-    await firebase.assertSucceeds(testDoc.update({ content: 'after' }));
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'test_documents', myDocId),
+        { content: 'before', authorId: myId },
+      );
+    });
+
+    await assertSucceeds(
+      setDoc(
+        doc(user.firestore(), 'test_documents', myDocId),
+        { content: 'after' },
+      )
+      .then()
+    );
   });
 
   it('Don\'t allow a user to edit somebody else\'s document', async () => {
-    const docId = 'doc123';
-    const admin = getAdminFirestore();
-    await admin
-      .collection('test_documents')
-      .doc(docId)
-      .set({ content: 'before', authorId: theirId });
+    const user = await testEnv.authenticatedContext(myId);
 
-    const db = getFirestore(myAuth);
-    const testDoc = db.collection('test_documents').doc(docId);
-    await firebase.assertFails(testDoc.update({ content: 'after' }));
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'test_documents', theirDocId),
+        { content: 'before', authorId: theirId },
+      );
+    });
+
+    await assertFails(
+      setDoc(
+        doc(user.firestore(), 'test_documents', theirDocId),
+        { content: 'after' },
+      )
+      .then()
+    );
   });
 });
