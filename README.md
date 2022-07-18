@@ -35,7 +35,8 @@ Go to the Firebase project directory and Install the dependencies and setup Fire
 
 Once all dependencies installed it will prompt you to log in via the browser and authenticate the firebase tool
 
-After login , the terminal will prompt with the firebase initialization process. **When asked if you'd like to overwrite `firestore.rules`, choose 'No'.**
+After login , the terminal will prompt with the firebase initialization process.
+**When asked if you'd like to overwrite `firestore.rules`, choose 'No'.**
 
 This project is set up to use Firestore, Functions, and Emulators. Make sure you choose these options when prompted by Firebase CLI. Similarly, when asked about which emulators you want to use, choose Auth, Firestore, and Functions.
 

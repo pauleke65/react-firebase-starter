@@ -5,8 +5,8 @@ const path = require("path");
 const mainPath = path.resolve(__dirname, "../");
 const functionPath = path.resolve(mainPath, "functions");
 
-const runNpmInstall = (lib, cmd, cwd = null) => {
-  const { status } = cp.spawnSync(lib, cmd, {
+const runCmd = (cmd, params, cwd = null) => {
+  const { status } = cp.spawnSync(cmd, params, {
     stdio: "inherit",
     shell: true,
     cwd,
@@ -16,12 +16,12 @@ const runNpmInstall = (lib, cmd, cwd = null) => {
 
 (() => {
   console.log("Installing main dependencies...");
-  runNpmInstall("npm", ["ci"], mainPath);
+  runCmd("npm", ["ci"], mainPath);
   console.log("Installing functions dependencies...");
-  runNpmInstall("npm", ["ci"], functionPath);
+  runCmd("npm", ["ci"], functionPath);
   console.log("Dependencies installed.");
   console.log("Firebase login...");
-  runNpmInstall("firebase", ["login"]);
+  runCmd("firebase", ["login"]);
   console.log("Firebase init...");
-  runNpmInstall("firebase", ["init"]);
+  runCmd("firebase", ["init"]);
 })();
