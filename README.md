@@ -51,7 +51,7 @@ Then tell Firebase CLI to use that project:
 
 Head over to `/src/firebase.clientApp.js` and add your config object (found in Firebase Console under Project Settings).
 
-Finally, run Emulators with `npm run emulators`. Head over to the browser ([localhost:3000](http://localhost:3000/)) and see `Hello from Firestore Emulator` appear there.
+Finally, run Emulators in another terminal with `npm run emulators`. Head over to the browser ([localhost:3000](http://localhost:3000/)) and see `Hello from Firestore Emulator` appear there.
 
 Congratulations! The setup process is now complete.
 
