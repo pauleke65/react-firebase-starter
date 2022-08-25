@@ -4,11 +4,11 @@
   "description": "Minimal starter for creating web apps with Firebase and React",
   "main": "./src/client/index.js",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "webpack serve --mode development",
     "emulators": "firebase emulators:start --import=mock-data --export-on-exit",
     "build": "webpack --mode production",
-    "test": "mocha --exit",
-    "setup": "node scripts/setup.js"
+    "test": "mocha --exit"
   },
   "keywords": [],
   "author": "@codebusters-ca",
@@ -40,6 +40,7 @@
     "@google-cloud/firestore": "^5.0.2",
     "babel-loader": "^8.2.3",
     "css-loader": "^6.5.1",
+    "dotenv": "^16.0.1",
     "eslint": "^8.7.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.25.4",
