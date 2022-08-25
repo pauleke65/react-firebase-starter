@@ -27,35 +27,19 @@ You will need the following to use this starter:
 
 ## Setup Guide
 
-In [Firebase Console](https://console.firebase.google.com),click Add project, then enable Firestore Database and Authentication via Google.
-
 Clone this repo:
 ```git clone https://github.com/codebusters-ca/react-firebase-starter.git```
 
-Go to the Firebase project directory and Install the dependencies and setup Firebase:
+Go to the Firebase project directory, run the setup script and follow the prompts:
 ```cd .\react-firebase-starter\ && npm run setup```
 
-Once all dependencies installed it will prompt you to log in via the browser and authenticate the firebase tool
-
-After login , the terminal will prompt with the firebase initialization process.
-**When asked if you'd like to overwrite `firestore.rules`, choose 'No'.**
-
-This project is set up to use Firestore, Functions, and Emulators. Make sure you choose these options when prompted by Firebase CLI. Similarly, when asked about which emulators you want to use, choose Auth, Firestore, and Functions.
-
-Now that we've initialized the local Firebase directory, let's connect it to your project.
-
-Run `firebase projects:list` and copy the ID of the project you want to use.
-
-Then tell Firebase CLI to use that project:
-```firebase use <your project ID>```
-
-Head over to `/src/firebase.clientApp.js` and add your config object (found in Firebase Console under Project Settings).
-
-Finally, run Emulators in another terminal with `npm run emulators`. Head over to the browser ([localhost:3000](http://localhost:3000/)) and see `Hello from Firestore Emulator` appear there.
-
-Congratulations! The setup process is now complete.
-
 ## Usage
+
+Run Firebase Emulators with `npm run emulators`.
+
+In another terminal, launch the app with `npm start`. The app will run on [localhost:3000](http://localhost:3000/). 
+
+If the setup process was successful, you will see `Hello from Firestore Emulator` in the app.
 
 ### Build
 
