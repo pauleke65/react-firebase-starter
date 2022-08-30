@@ -56,6 +56,10 @@ You should see a list of 3 tests that all pass.
 
 ```npm run build```
 
+### Loom Video
+
+[Video demo](https://www.loom.com/share/3ce039b9a98c423ea9c1a2432d124cca)
+
 ## Contribute
 
 We ❤️ feedback and help from fellow devs! Check out [open issues](https://github.com/codebusters-ca/react-firebase-starter/issues), create a [new one](https://github.com/codebusters-ca/react-firebase-starter/issues/new?labels=bug), or send us a [pull request](https://github.com/codebusters-ca/react-firebase-starter/compare).
