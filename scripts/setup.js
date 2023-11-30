@@ -50,9 +50,9 @@ const getKeypress = () => {
   await getKeypress();
 
   logWithFormat('Installing main dependencies...');
-  runCmd('npm', ['ci'], mainPath);
+  runCmd('pnpm', ['i', 'force'], mainPath)
   logWithFormat('Installing functions dependencies...');
-  runCmd('npm', ['ci'], functionPath);
+  runCmd('pnpm', ['i', 'force'], functionPath);
   logWithFormat('Dependencies installed!');
   logWithFormat('Firebase login...');
   runCmd('firebase', ['login']);

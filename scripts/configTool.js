@@ -3,12 +3,14 @@
 const { writeFile } = require("fs");
 const { exec } = require("child_process");
 
-exec("firebase apps:sdkconfig -j", (error, stdout, stderr) => {
+exec("firebase apps:sdkconfig web -j", (error, stdout, stderr) => {
   if (stderr) console.error(stderr);
 
   const data = JSON.parse(stdout);
 
   let envCopy = "";
+
+  console.log(JSON.stringify(data, null, 2))
 
   Object.entries(data.result.sdkConfig).forEach(([key, value]) => {
     // replace camelCase
