@@ -21,14 +21,13 @@ function Layout({ children }) {
   const { user } = useUser();
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-900">
-      <Popover as="header" className="relative">
+    <div className="h-screen overflow-hidden bg-gray-600 dark:bg-background flex flex-col justify-center">
+      {/* <Popover as="header" className="relative">
         <Disclosure as="nav" className="bg-transparent">
           {({ open }) => (
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
               <div className="relative flex items-center justify-end h-16">
                 <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                  {/* Mobile menu button */}
                   <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
@@ -92,7 +91,7 @@ function Layout({ children }) {
             </div>
           )}
         </Disclosure>
-      </Popover>
+      </Popover> */}
 
       {children}
 
