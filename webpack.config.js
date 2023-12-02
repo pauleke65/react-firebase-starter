@@ -7,7 +7,7 @@ require("dotenv").config({ path: "./.env" });
 
 module.exports = {
   mode: "development",
-  entry: path.resolve(__dirname, "src/client/index.js"),
+  entry: path.resolve(__dirname, "src/client/index.tsx"),
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "dist"),
@@ -36,13 +36,18 @@ module.exports = {
         },
       },
       {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        loader: "ts-loader",
+      },
+      {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
       },
     ],
   },
   resolve: {
-    extensions: ["", ".js", ".jsx"],
+    extensions: ["", ".js", ".jsx", ".tsx"],
   },
   plugins: [
     new webpack.DefinePlugin({

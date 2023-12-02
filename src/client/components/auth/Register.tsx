@@ -1,6 +1,5 @@
-import React from "react";
 import {Header, Input, FormAction} from "./Login";
-import { useState } from "react";
+import React, { useState } from "react";
 
 const signupFields = [
   {
@@ -46,17 +45,17 @@ const signupFields = [
 ];
 
 const fields = signupFields;
-let fieldsState = {};
+let fieldsState:any = {};
 
 fields.forEach((field) => (fieldsState[field.id] = ""));
 
 function Signup() {
   const [signupState, setSignupState] = useState(fieldsState);
 
-  const handleChange = (e) =>
+  const handleChange = (e: any) =>
     setSignupState({ ...signupState, [e.target.id]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     console.log(signupState);
     createAccount();
@@ -80,6 +79,7 @@ function Signup() {
             type={field.type}
             isRequired={field.isRequired}
             placeholder={field.placeholder}
+            customClass={""}
           />
         ))}
         <FormAction handleSubmit={handleSubmit} text="Signup" />

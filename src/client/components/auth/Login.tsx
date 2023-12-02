@@ -25,26 +25,28 @@ const loginFields = [
   },
 ];
 
-export  function Header({ heading, paragraph, linkName, linkUrl = "#" }) {
+export function Header({
+  heading,
+  paragraph,
+  linkName,
+  linkUrl = "#",
+}: {
+  heading: string;
+  paragraph: string;
+  linkName: string;
+  linkUrl: string;
+}) {
   return (
     <div className="mb-10">
       <div className="flex justify-center">
-        <img
-          alt=""
-          className="h-14 w-14"
-          src="../assets/amtap-logo-re.png"
-         
-        />
+        <img alt="" className="h-14 w-14" src="../assets/amtap-logo-re.png" />
       </div>
       <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
         {heading}
       </h2>
       <p className="text-center text-sm text-purple mt-5">
         {paragraph}{" "}
-        <Link
-          to={linkUrl}
-          className="font-medium text-primary"
-        >
+        <Link to={linkUrl} className="font-medium text-primary">
           {linkName}
         </Link>
       </p>
@@ -65,6 +67,17 @@ export function Input({
   isRequired = false,
   placeholder,
   customClass,
+}: {
+  handleChange: any;
+  value: any;
+  labelText: any;
+  labelFor: any;
+  id: any;
+  name: any;
+  type: any;
+  isRequired: any;
+  placeholder: any;
+  customClass?: string;
 }) {
   return (
     <div className="my-5">
@@ -86,24 +99,24 @@ export function Input({
 }
 
 const fields = loginFields;
-let fieldsState = {};
+let fieldsState: any = {};
 fields.forEach((field) => (fieldsState[field.id] = ""));
 
 function LoginC() {
   const [loginState, setLoginState] = useState(fieldsState);
 
-  const handleChange = (e) => {
+  const handleChange = (e:any) => {
     setLoginState({ ...loginState, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     authenticateUser();
   };
 
   //Handle Login API Integration here
   const authenticateUser = () => {
-    console.log(loginState)
+    console.log(loginState);
   };
 
   return (
@@ -121,12 +134,13 @@ function LoginC() {
             type={field.type}
             isRequired={field.isRequired}
             placeholder={field.placeholder}
+            customClass={""}
           />
         ))}
       </div>
 
-<div className="mt-4">
-      <FormAction handleSubmit={handleSubmit} text="Login" />
+      <div className="mt-4">
+        <FormAction handleSubmit={handleSubmit} text="Login" />
       </div>
     </form>
   );
@@ -134,15 +148,19 @@ function LoginC() {
 
 export function FormAction({
   handleSubmit,
-  type = "Button",
-  action = "submit",
+  type = "button",
   text,
+}:
+{
+  handleSubmit: any,
+  type?: any,
+  text: any,
 }) {
   return (
     <>
       {type === "Button" ? (
         <button
-          type={action}
+          type={type}
           className=" bg-primary group relative w-full flex justify-center p-3.5 border border-transparent text-sm font-medium rounded-md text-background   focus:outline-none focus:ring-2 focus:ring-offset-2  mt-10"
           onSubmit={handleSubmit}
         >
@@ -164,11 +182,10 @@ export default function Login() {
         linkName="Register"
         linkUrl="/register"
       />
-      
-      <div className="mt-2 sm:mx-auto sm:w-full sm:max-w-md">
 
-      <LoginC />
-        </div>
+      <div className="mt-2 sm:mx-auto sm:w-full sm:max-w-md">
+        <LoginC />
+      </div>
     </>
   );
 }

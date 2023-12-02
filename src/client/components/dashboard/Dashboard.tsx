@@ -61,25 +61,33 @@ function TopBar() {
           Add Exercise
         </p>
       </button>
-      <ExerciseModal isOpen={isOpen} closeModal={closeModal} />
+      <ExerciseModal isOpen={isOpen} closeModal={closeModal} data={{}} />
     </div>
   );
 }
 
-function ExerciseModal({ isOpen, closeModal, data }) {
+function ExerciseModal({
+  isOpen,
+  closeModal,
+  data,
+}: {
+  isOpen: boolean;
+  closeModal: any;
+  data: any;
+}) {
   const fields = exerciseFields;
-  let fieldsState = {};
+  let fieldsState: any = {};
 
   const dataKeys = Object.keys(data ?? {});
   dataKeys.forEach((key) => (fieldsState[key] = data[key] ?? ""));
 
   const [exerciseState, setExerciseState] = useState(fieldsState);
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setExerciseState({ ...exerciseState, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     authenticateUser();
   };
@@ -198,7 +206,7 @@ function ExerciseModal({ isOpen, closeModal, data }) {
   );
 }
 
-function VideoCard({ exercise }) {
+function VideoCard({ exercise }: { exercise: Exercise }) {
   let [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -236,13 +244,18 @@ function VideoCard({ exercise }) {
   );
 }
 
+interface Exercise {
+  "exercise-name": string;
+  description: string;
+}
+
 function Dashboard() {
   const { user } = useUser();
 
   console.log(user);
 
-  if(user) redirect('/login')
-  const exerciseList = [
+  if (user) redirect("/login");
+  const exerciseList: Exercise[] = [
     {
       "exercise-name": "30 Minute Stretch",
       description: "Lorem ipsum, dolor sit amet consectetur adipisicin?",
