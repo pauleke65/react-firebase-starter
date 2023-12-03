@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Popover, Transition } from "@headlessui/react";
 import React, { Fragment, useEffect, useState } from "react";
 
 import { PlusIcon } from "@heroicons/react/24/outline";
@@ -8,6 +8,7 @@ import { Input } from "../auth/Login";
 import { useUser } from "../user-context";
 
 import { redirect, useNavigate } from "react-router-dom";
+import { auth } from "../../../firebase/clientApp";
 
 const logoImg = require("../../../../src/assets/amtap-logo-re.png");
 
@@ -35,7 +36,7 @@ const exerciseFields = [
 function TopBar() {
   let [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
-
+  const navigate = useNavigate();
 
   function closeModal() {
     setIsOpen(false);
@@ -45,16 +46,36 @@ function TopBar() {
     setIsOpen(true);
   }
 
+  const logout = async () => {
+    await auth.signOut();
+    navigate("/login");
+  };
+
+  const displayName = user?.displayName ?? user?.email;
+
   return (
     <div className="flex items-center">
       {/* <div className="w-full bg-red-600 h-14"></div> */}
       <h2 className=" text-3xl font-bold mr-auto">AMTAP Exercises</h2>
 
-      <p className="whitespace-nowrap mx-4 text-gray-600">
-        Logged in as:{" "}
-        <span className="font-semibold text-navy">{user.displayName}</span>
-      </p>
+      <Popover className="relative">
+        <Popover.Button className="whitespace-nowrap mx-4 text-gray-600 focus:outline-none">
+          Logged in as:{" "}
+          <span className="font-semibold text-navy">{displayName}</span>
+        </Popover.Button>
 
+        <Popover.Panel className="absolute z-10">
+          <button
+            className=" h-12 rounded-lg flex items-center shadow-md px-4"
+            type="button"
+            onClick={logout}
+          >
+            <p className="text-background whitespace-nowrap text-sm font-semibold">
+              Sign Out from Account
+            </p>
+          </button>
+        </Popover.Panel>
+      </Popover>
       <button
         className=" h-12 rounded-lg flex items-center bg-primary px-4"
         type="button"
@@ -277,7 +298,9 @@ function Dashboard() {
     },
   ];
 
-  return (
+  return !user ? (
+    <></>
+  ) : (
     <main className="h-screen w-screen p-4">
       <div className="flex h-full  ">
         {/* Left Panel */}

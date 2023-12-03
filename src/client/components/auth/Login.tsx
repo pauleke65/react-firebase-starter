@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { Link, redirect } from "react-router-dom";
-import { ArrowPathIcon, CogIcon } from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
+import { CogIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { auth } from "../../../firebase/clientApp";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { toast } from "sonner";
 
 const logoImg = require("../../../../src/assets/amtap-logo-re.png");
 
@@ -108,8 +112,7 @@ fields.forEach((field) => (fieldsState[field.id] = ""));
 function LoginC() {
   const [loginState, setLoginState] = useState(fieldsState);
   const [isLoading, setIsLoading] = useState(false);
-const navigate = useNavigate();
-
+  const navigate = useNavigate();
 
   const handleChange = (e: any) => {
     setLoginState({ ...loginState, [e.target.id]: e.target.value });
@@ -122,15 +125,24 @@ const navigate = useNavigate();
   };
 
   //Handle Login API Integration here
-  const authenticateUser = () => {
-    console.log("redirecting...");
-    // history.push("/dashboard");
-    navigate('/dashboard');
-    // setIsLoading(true);
-    // console.log(loginState);
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    // }, 3000);
+  const authenticateUser = async () => {
+    await auth.signOut();
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        loginState["email-address"],
+        loginState["password"]
+      );
+      navigate("/");
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      } else {
+        toast.error(e);
+      }
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -179,9 +191,9 @@ export function FormAction({
     <>
       {type === "button" ? (
         <button
-          type="button"
+          type="submit"
           className=" bg-primary group relative w-full flex justify-center p-3.5 border border-transparent text-sm font-medium rounded-md text-background   focus:outline-none focus:ring-2 focus:ring-offset-2  mt-10"
-          onClick={handleSubmit}
+          onSubmit={handleSubmit}
         >
           {isLoading ? (
             <CogIcon

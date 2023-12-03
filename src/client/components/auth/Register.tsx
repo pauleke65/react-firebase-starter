@@ -2,8 +2,10 @@ import { Header, Input, FormAction } from "./Login";
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../../firebase/clientApp";
+import { updateProfile } from "firebase/auth";
 import { toast } from "sonner";
 import { FirebaseError } from "firebase/app";
+import { useNavigate } from "react-router-dom";
 
 const signupFields = [
   {
@@ -56,6 +58,7 @@ fields.forEach((field) => (fieldsState[field.id] = ""));
 function Signup() {
   const [signupState, setSignupState] = useState(fieldsState);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: any) =>
     setSignupState({ ...signupState, [e.target.id]: e.target.value });
@@ -64,12 +67,18 @@ function Signup() {
     console.log("Handle Submit");
     e.preventDefault();
 
-    console.log(signupState);
+
+    if(signupState['password'] !== signupState['confirm-password']){
+      toast.error("Password and Confirm Password should be same");
+      return;
+    }
+
     createAccount();
   };
 
   //handle Signup API Integration here
   const createAccount = async () => {
+    await auth.signOut();
     setIsLoading(true);
     console.log("Creating Account");
 
@@ -80,14 +89,20 @@ function Signup() {
         signupState["password"]
       );
 
+      await updateProfile(auth.currentUser, {
+        displayName: signupState["full-name"],
+      }).catch((error) => {
+        throw new Error(error);
+      });
+      auth;
       console.log(res);
       toast.success("Account Created Successfully");
+      navigate("/");
     } catch (e) {
       if (e instanceof FirebaseError) {
         toast.error(e.message);
-      }
-      else{
-        toast.error(e)
+      } else {
+        toast.error(e);
       }
     }
 
@@ -113,7 +128,11 @@ function Signup() {
             customClass={""}
           />
         ))}
-        <FormAction handleSubmit={handleSubmit} isLoading={isLoading} text="Signup" />
+        <FormAction
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          text="Signup"
+        />
       </div>
     </form>
   );
