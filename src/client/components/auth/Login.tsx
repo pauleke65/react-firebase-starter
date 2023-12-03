@@ -120,7 +120,6 @@ function LoginC() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-
     authenticateUser();
   };
 
@@ -134,8 +133,10 @@ function LoginC() {
         loginState["email-address"],
         loginState["password"]
       );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate("/");
     } catch (e) {
+      console.log(e);
       if (e instanceof FirebaseError) {
         toast.error(e.message);
       } else {

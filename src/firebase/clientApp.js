@@ -1,9 +1,10 @@
 // Firebase App (the core Firebase SDK) is always required and must be listed first
-import { getApp, initializeApp } from 'firebase/app';
+import { getApp, initializeApp } from "firebase/app";
 // Add Firebase products you want ot use here
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 // Replace this with your app's configuration from Firebase Console
 const firebaseConfig = {
@@ -22,11 +23,13 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore();
 const auth = getAuth();
 const functions = getFunctions(getApp());
+const storage = getStorage(firebaseApp);
 
-if (window.location.hostname === 'localhost') {
+if (window.location.hostname === "localhost") {
   connectFirestoreEmulator(db, "localhost", 8080);
-  connectAuthEmulator(auth, 'http://localhost:9099');
+  connectAuthEmulator(auth, "http://localhost:9099");
   connectFunctionsEmulator(functions, "localhost", 5001);
+  connectStorageEmulator(storage, "localhost", 9199);
 }
 
-export { firebaseApp, db, auth };
+export { firebaseApp, db, auth, storage };

@@ -67,8 +67,7 @@ function Signup() {
     console.log("Handle Submit");
     e.preventDefault();
 
-
-    if(signupState['password'] !== signupState['confirm-password']){
+    if (signupState["password"] !== signupState["confirm-password"]) {
       toast.error("Password and Confirm Password should be same");
       return;
     }
@@ -97,6 +96,7 @@ function Signup() {
       auth;
       console.log(res);
       toast.success("Account Created Successfully");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate("/");
     } catch (e) {
       if (e instanceof FirebaseError) {

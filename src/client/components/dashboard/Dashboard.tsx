@@ -1,23 +1,29 @@
 import { Dialog, Popover, Transition } from "@headlessui/react";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState, useCallback } from "react";
 
-import { PlusIcon } from "@heroicons/react/24/outline";
-import { PlayCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { CogIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PlayCircleIcon } from "@heroicons/react/24/solid";
 
 import { Input } from "../auth/Login";
-import { useUser } from "../user-context";
 
-import { redirect, useNavigate } from "react-router-dom";
-import { auth } from "../../../firebase/clientApp";
+import { useNavigate } from "react-router-dom";
+import { auth, db, storage } from "../../../firebase/clientApp";
+import { toast } from "sonner";
+import Dropzone, { Accept } from "react-dropzone";
+
+import { ref, uploadBytes } from "firebase/storage";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
+import { useUser } from "../user-context";
 
 const logoImg = require("../../../../src/assets/amtap-logo-re.png");
 
 const exerciseFields = [
   {
     labelText: "Exercise Name",
-    labelFor: "exercise-name",
-    id: "exercise-name",
-    name: "exercise-name",
+    labelFor: "exerciseName",
+    id: "exerciseName",
+    name: "exerciseName",
     type: "text",
     isRequired: true,
     placeholder: "Exercise Name",
@@ -35,6 +41,7 @@ const exerciseFields = [
 
 function TopBar() {
   let [isOpen, setIsOpen] = useState(false);
+  let [displayName, setDisplayName] = useState("");
   const { user } = useUser();
   const navigate = useNavigate();
 
@@ -51,7 +58,9 @@ function TopBar() {
     navigate("/login");
   };
 
-  const displayName = user?.displayName ?? user?.email;
+  useEffect(() => {
+    if (user) setDisplayName(user?.displayName ?? user?.email);
+  }, []);
 
   return (
     <div className="flex items-center">
@@ -86,7 +95,7 @@ function TopBar() {
           Add Exercise
         </p>
       </button>
-      <ExerciseModal isOpen={isOpen} closeModal={closeModal} data={{}} />
+      <ExerciseModal isOpen={isOpen} closeModal={closeModal} />
     </div>
   );
 }
@@ -98,10 +107,23 @@ function ExerciseModal({
 }: {
   isOpen: boolean;
   closeModal: any;
-  data: any;
+  data?: any;
 }) {
+  let [isLoading, setIsLoading] = useState(false);
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const [hasVideo, setHasVideo] = useState(false);
+  const { user } = useUser();
+
   const fields = exerciseFields;
   let fieldsState: any = {};
+  const isUpdate = data != null;
+
+  const onClose = () => {
+    setSelectedVideoFile(null);
+    setHasVideo(false);
+
+    closeModal();
+  };
 
   const dataKeys = Object.keys(data ?? {});
   dataKeys.forEach((key) => (fieldsState[key] = data[key] ?? ""));
@@ -114,19 +136,88 @@ function ExerciseModal({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    authenticateUser();
+    isUpdate ? updateExercise() : addExercise();
   };
 
-  //Handle Login API Integration here
-  const authenticateUser = () => {
+  const addExercise = async () => {
+    try {
+      setIsLoading(true);
+
+      if (!selectedVideoFile) throw "Please upload a video file";
+
+      const result = await uploadVideo();
+
+      await addDoc(collection(db, "amtapExercises"), {
+        exerciseName: exerciseState["exerciseName"],
+        description: exerciseState["description"],
+        owner: {
+          id: user.uid,
+          name: user.displayName,
+          email: user.email,
+        },
+        videoUrl: result.ref.fullPath,
+      });
+
+      console.log(exerciseState);
+      setIsLoading(false);
+      closeModal();
+    } catch (e) {
+      console.log(e);
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      } else {
+        toast.error(e);
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const updateExercise = async () => {
+    setIsLoading(true);
     console.log(exerciseState);
+    setIsLoading(false);
     closeModal();
   };
 
-  const hasVideo = false;
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    // Do something with the files
+
+    if (acceptedFiles.length > 0) {
+      setSelectedVideoFile(acceptedFiles[0]);
+      setHasVideo(true);
+      console.log(selectedVideoFile);
+    }
+  }, []);
+
+  const acceptedFileType: Accept = {
+    "video/mp4": [".mp4"],
+  };
+
+  const onDropRejected = (fileRejections: any) => {
+    try {
+      toast.error(fileRejections[0].errors[0].message);
+    } catch (e) {
+      toast.error(
+        "File type not accepted, Only MP4 files under 5MV are accepted"
+      );
+    }
+  };
+
+  const uploadVideo = async () => {
+    const storageRef = ref(
+      storage,
+      `amtap-exercises/${selectedVideoFile.name}_${Date.now()}`
+    );
+
+    const uploadedFile = await uploadBytes(storageRef, selectedVideoFile);
+
+    return uploadedFile;
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10 " onClose={closeModal}>
+      <Dialog as="div" className="relative z-10 " onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -155,7 +246,7 @@ function ExerciseModal({
                   as="h3"
                   className="text-lg font-medium leading-6 text-white"
                 >
-                  Add a New Exercise
+                  {isUpdate ? "Edit Exercise" : "Add a New Exercise"}
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-purple">
@@ -167,20 +258,54 @@ function ExerciseModal({
                   className="mt-8 space-y-6 flex flex-col"
                   onSubmit={handleSubmit}
                 >
-                  <div
-                    className={`
-                      ${!hasVideo ? "cursor-pointer" : ""}
-                     w-full h-64 self-center flex justify-center items-center rounded-2xl relative border border-purple`}
+                  <Dropzone
+                    onDrop={onDrop}
+                    accept={acceptedFileType}
+                    onDropRejected={onDropRejected}
+                    minSize={0}
+                    maxSize={5242880}
+                    maxFiles={1}
                   >
-                    {hasVideo ? (
-                      <PlayCircleIcon
-                        className="block h-20 w-20 mr-2 text-purple absolute"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <p className="z-10 text-white">Click to Upload a Video</p>
+                    {({
+                      getRootProps,
+                      getInputProps,
+                      isDragActive,
+                      isDragReject,
+                    }) => (
+                      <div className="w-full h-64 self-center flex justify-center items-center rounded-2xl relative border  border-purple">
+                        <div className="bg-red-200">
+                          {selectedVideoFile != null && (
+                            <video
+                              className=" z-10 absolute bottom-0  left-0 w-full h-64  rounded-2xl"
+                              controls
+                            >
+                              <source
+                                src={URL.createObjectURL(selectedVideoFile)}
+                              />
+                            </video>
+                          )}
+                        </div>
+                        <div
+                          {...getRootProps()}
+                          className={`z-20 focus:outline-none bg-purple rounded-full py-1 px-3 cursor-pointer absolute ${
+                            hasVideo ? "opacity-50" : ""
+                          } `}
+                        >
+                          <input {...getInputProps()} />
+
+                          <p className=" text-white">
+                            {isDragReject
+                              ? "File type not accepted, Only MP4 files are accepted"
+                              : isDragActive
+                              ? "Drop Video Here"
+                              : hasVideo
+                              ? "Drag/Click to Replace Video (5MB Max)"
+                              : "Drag/Click to Upload a Video (5MB Max)"}
+                          </p>
+                        </div>{" "}
+                      </div>
                     )}
-                  </div>
+                  </Dropzone>
 
                   <div className="-space-y-px">
                     {fields.map((field) => (
@@ -199,28 +324,45 @@ function ExerciseModal({
                     ))}
                   </div>
 
-                  <div className="mt-4 flex">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md   border border-transparent bg-primary px-4 py-2 text-base font-medium text-background focus:outline-none  hover:ring-primary hover:ring-offset-2 hover:ring-offset-background hover:ring-2"
-                      onClick={handleSubmit}
-                    >
-                      <PlusIcon
-                        className="block h-4 w-4 mr-2"
+                  {isLoading ? (
+                    <div className="flex justify-center items-center text-white">
+                      <CogIcon
+                        className="block h-8 w-8 animate-spin mr-2"
                         aria-hidden="true"
                       />
-                      <p className=" whitespace-nowrap text-sm font-semibold">
-                        Add Exercise
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent  px-4 py-2 text-base font-medium text-red-600 focus:outline-none ml-4"
-                      onClick={closeModal}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                      <p>Uploading...</p>
+                    </div>
+                  ) : (
+                    <div className="mt-6 flex">
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-md   border border-transparent bg-primary px-4 py-2 text-base font-medium text-background focus:outline-none  hover:ring-primary hover:ring-offset-2 hover:ring-offset-background hover:ring-2"
+                        onSubmit={handleSubmit}
+                      >
+                        {isUpdate ? (
+                          <PencilIcon
+                            className="block h-4 w-4 mr-2"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <PlusIcon
+                            className="block h-4 w-4 mr-2"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <p className=" whitespace-nowrap text-sm font-semibold">
+                          {isUpdate ? "Update Exercise" : "Add Exercise"}
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-md border border-transparent  px-4 py-2 text-base font-medium text-red-600 focus:outline-none ml-4"
+                        onClick={onClose}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </form>
               </Dialog.Panel>
             </Transition.Child>
@@ -233,6 +375,7 @@ function ExerciseModal({
 
 function VideoCard({ exercise }: { exercise: Exercise }) {
   let [isOpen, setIsOpen] = useState(false);
+  let [ownerName, setOwnerName] = useState("");
 
   function closeModal() {
     setIsOpen(false);
@@ -241,6 +384,14 @@ function VideoCard({ exercise }: { exercise: Exercise }) {
   function openModal() {
     setIsOpen(true);
   }
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user)
+      setOwnerName(
+        exercise.owner.id == user?.uid ? "You" : exercise.owner.name
+      );
+  }, []);
 
   return (
     <>
@@ -254,11 +405,12 @@ function VideoCard({ exercise }: { exercise: Exercise }) {
           </div>
           <div className="ml-6 h-44 flex flex-col justify-center items-start">
             <h2 className="font-semibold text-2xl">
-              {exercise["exercise-name"]}
+              {exercise["exerciseName"]}
             </h2>
             <p className="text-sm text-gray-500 mt-1">{exercise.description}</p>
             <p className="text-sm mt-2 text-gray-500">
-              Uploaded By: <span className="font-semibold text-navy">You</span>
+              Uploaded By:{" "}
+              <span className="font-semibold text-navy">{ownerName}</span>
             </p>
           </div>
         </div>
@@ -270,37 +422,60 @@ function VideoCard({ exercise }: { exercise: Exercise }) {
 }
 
 interface Exercise {
-  "exercise-name": string;
+  id: string;
+  exerciseName: string;
   description: string;
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  videoUrl: string;
 }
 
 function Dashboard() {
+  let [isLoading, setIsLoading] = useState(true);
+  let [exercises, setExercises] = useState<Exercise[]>([]);
+
   const { user } = useUser();
   const navigate = useNavigate();
+
+  const getExercises = async () => {
+    try {
+      const exercisesRef = collection(db, "amtapExercises");
+
+      const q = query(exercisesRef, where("owner.id", "==", user.uid));
+
+      const querySnapshot = await getDocs(q);
+
+      setExercises(
+        querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Exercise[]
+      );
+    } catch (e) {
+      console.log(e);
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      } else {
+        toast.error(e);
+      }
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     console.log(user);
 
-    if (!user) navigate("/login");
-  }, []);
-  const exerciseList: Exercise[] = [
-    {
-      "exercise-name": "30 Minute Stretch",
-      description: "Lorem ipsum, dolor sit amet consectetur adipisicin?",
-    },
-    {
-      "exercise-name": "Morning Workout",
-      description: "Lorem ipsum, dolor sit amet consectetur adipisicin?",
-    },
-    {
-      "exercise-name": "Evening Workout",
-      description: "Lorem ipsum, dolor sit amet consectetur adipisicin?",
-    },
-  ];
+    if (!user) {
+      navigate("/login");
+    } else {
+      getExercises();
+    }
+  }, [user]);
 
-  return !user ? (
-    <></>
-  ) : (
+  return (
     <main className="h-screen w-screen p-4">
       <div className="flex h-full  ">
         {/* Left Panel */}
@@ -321,18 +496,40 @@ function Dashboard() {
 
             <TopBar />
 
-            <h2 className=" text-2xl font-bold my-8">
-              Uploaded Exercises (30)
-            </h2>
+            {isLoading ? (
+              <div className="flex justify-center items-center flex-col h-[85vh] ">
+                <div className="border-none rounded-md p-4 max-w-sm w-full mx-auto">
+                  <div className="animate-pulse flex space-x-4">
+                    <div className="rounded-full bg-slate-700 h-10 w-10"></div>
+                    <div className="flex-1 space-y-6 py-1">
+                      <div className="h-2 bg-slate-700 rounded"></div>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                          <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h2 className=" text-2xl font-bold my-8">
+                  Uploaded Exercises ({exercises.length})
+                </h2>
 
-            <div className=" h-[75vh] overflow-y-auto">
-              {exerciseList.map((exercise) => (
-                <VideoCard
-                  key={exercise["exercise-name"]}
-                  exercise={exercise}
-                />
-              ))}
-            </div>
+                <div className=" h-[75vh] overflow-y-auto">
+                  {exercises.map((exercise) => (
+                    <VideoCard
+                      key={exercise["exerciseName"]}
+                      exercise={exercise}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
