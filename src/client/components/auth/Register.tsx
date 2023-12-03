@@ -1,5 +1,9 @@
-import {Header, Input, FormAction} from "./Login";
+import { Header, Input, FormAction } from "./Login";
 import React, { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../../firebase/clientApp";
+import { toast } from "sonner";
+import { FirebaseError } from "firebase/app";
 
 const signupFields = [
   {
@@ -45,24 +49,51 @@ const signupFields = [
 ];
 
 const fields = signupFields;
-let fieldsState:any = {};
+let fieldsState: any = {};
 
 fields.forEach((field) => (fieldsState[field.id] = ""));
 
 function Signup() {
   const [signupState, setSignupState] = useState(fieldsState);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: any) =>
     setSignupState({ ...signupState, [e.target.id]: e.target.value });
 
   const handleSubmit = (e: any) => {
+    console.log("Handle Submit");
     e.preventDefault();
+
     console.log(signupState);
     createAccount();
   };
 
   //handle Signup API Integration here
-  const createAccount = () => {};
+  const createAccount = async () => {
+    setIsLoading(true);
+    console.log("Creating Account");
+
+    try {
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        signupState["email-address"],
+        signupState["password"]
+      );
+
+      console.log(res);
+      toast.success("Account Created Successfully");
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      }
+      else{
+        toast.error(e)
+      }
+    }
+
+    setIsLoading(false);
+    console.log("Done...!");
+  };
 
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -82,7 +113,7 @@ function Signup() {
             customClass={""}
           />
         ))}
-        <FormAction handleSubmit={handleSubmit} text="Signup" />
+        <FormAction handleSubmit={handleSubmit} isLoading={isLoading} text="Signup" />
       </div>
     </form>
   );

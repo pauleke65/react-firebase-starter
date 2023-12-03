@@ -1,6 +1,9 @@
-import React from "react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, redirect } from "react-router-dom";
+import { ArrowPathIcon, CogIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
+
+const logoImg = require("../../../../src/assets/amtap-logo-re.png");
 
 const loginFields = [
   {
@@ -39,7 +42,7 @@ export function Header({
   return (
     <div className="mb-10">
       <div className="flex justify-center">
-        <img alt="" className="h-14 w-14" src="../assets/amtap-logo-re.png" />
+        <img alt="" className=" h-20" src={logoImg.default} />
       </div>
       <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
         {heading}
@@ -104,19 +107,30 @@ fields.forEach((field) => (fieldsState[field.id] = ""));
 
 function LoginC() {
   const [loginState, setLoginState] = useState(fieldsState);
+  const [isLoading, setIsLoading] = useState(false);
+const navigate = useNavigate();
 
-  const handleChange = (e:any) => {
+
+  const handleChange = (e: any) => {
     setLoginState({ ...loginState, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
     authenticateUser();
   };
 
   //Handle Login API Integration here
   const authenticateUser = () => {
-    console.log(loginState);
+    console.log("redirecting...");
+    // history.push("/dashboard");
+    navigate('/dashboard');
+    // setIsLoading(true);
+    // console.log(loginState);
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    // }, 3000);
   };
 
   return (
@@ -140,7 +154,11 @@ function LoginC() {
       </div>
 
       <div className="mt-4">
-        <FormAction handleSubmit={handleSubmit} text="Login" />
+        <FormAction
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          text="Login"
+        />
       </div>
     </form>
   );
@@ -150,21 +168,29 @@ export function FormAction({
   handleSubmit,
   type = "button",
   text,
-}:
-{
-  handleSubmit: any,
-  type?: any,
-  text: any,
+  isLoading,
+}: {
+  handleSubmit: React.FormEventHandler<HTMLButtonElement>;
+  type?: string;
+  text: any;
+  isLoading: boolean;
 }) {
   return (
     <>
-      {type === "Button" ? (
+      {type === "button" ? (
         <button
-          type={type}
+          type="button"
           className=" bg-primary group relative w-full flex justify-center p-3.5 border border-transparent text-sm font-medium rounded-md text-background   focus:outline-none focus:ring-2 focus:ring-offset-2  mt-10"
-          onSubmit={handleSubmit}
+          onClick={handleSubmit}
         >
-          {text}
+          {isLoading ? (
+            <CogIcon
+              className="block h-6 w-6 animate-spin"
+              aria-hidden="true"
+            />
+          ) : (
+            `${text}`
+          )}
         </button>
       ) : (
         <></>

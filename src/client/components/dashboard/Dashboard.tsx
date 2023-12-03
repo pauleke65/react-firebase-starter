@@ -1,13 +1,15 @@
 import { Dialog, Transition } from "@headlessui/react";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 
-import { PlusIcon } from "@heroicons/react/outline";
-import { PlayIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlayCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 
 import { Input } from "../auth/Login";
 import { useUser } from "../user-context";
 
-import { redirect } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
+
+const logoImg = require("../../../../src/assets/amtap-logo-re.png");
 
 const exerciseFields = [
   {
@@ -31,7 +33,9 @@ const exerciseFields = [
 ];
 
 function TopBar() {
-  let [isOpen, setIsOpen] = useState(true);
+  let [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
+
 
   function closeModal() {
     setIsOpen(false);
@@ -48,7 +52,7 @@ function TopBar() {
 
       <p className="whitespace-nowrap mx-4 text-gray-600">
         Logged in as:{" "}
-        <span className="font-semibold text-navy">Paul Imoke</span>
+        <span className="font-semibold text-navy">{user.displayName}</span>
       </p>
 
       <button
@@ -148,7 +152,7 @@ function ExerciseModal({
                      w-full h-64 self-center flex justify-center items-center rounded-2xl relative border border-purple`}
                   >
                     {hasVideo ? (
-                      <PlayIcon
+                      <PlayCircleIcon
                         className="block h-20 w-20 mr-2 text-purple absolute"
                         aria-hidden="true"
                       />
@@ -222,7 +226,7 @@ function VideoCard({ exercise }: { exercise: Exercise }) {
       <button type="button" onClick={openModal}>
         <div className="flex ">
           <div className=" w-64 h-44  flex justify-center items-center bg-background rounded-2xl">
-            <PlayIcon
+            <PlayCircleIcon
               className="block h-20 w-20 mr-2 text-purple"
               aria-hidden="true"
             />
@@ -251,10 +255,13 @@ interface Exercise {
 
 function Dashboard() {
   const { user } = useUser();
+  const navigate = useNavigate();
 
-  console.log(user);
+  useEffect(() => {
+    console.log(user);
 
-  if (user) redirect("/login");
+    if (!user) navigate("/login");
+  }, []);
   const exerciseList: Exercise[] = [
     {
       "exercise-name": "30 Minute Stretch",
@@ -277,13 +284,14 @@ function Dashboard() {
         <div className=" w-2/12 h-full ">
           {/* Content for the Left Panel */}
           <div className="p-4 py-8 h-full flex flex-col items-center justify-center">
-            <h1 className="text-2xl font-bold text-white">AMTAP LOGO</h1>
+            {/* <h1 className="text-2xl font-bold text-white">AMTAP LOGO</h1> */}
+            <img alt="" className=" h-24 mr-4" src={logoImg.default} />
             {/* Add more components/content here */}
           </div>
         </div>
 
         {/* Right Panel */}
-        <div className="bg-white w-10/12 rounded-3xl">
+        <div className="bg-white w-10/12 rounded-3xl my-2">
           {/* Content for the Right Panel */}
           <div className="p-8">
             {/* Add more components/content here */}

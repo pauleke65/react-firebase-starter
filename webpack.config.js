@@ -41,6 +41,13 @@ module.exports = {
         loader: "ts-loader",
       },
       {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loader: "file-loader",
+        // options: {
+        //   name: "src/assets/[name].[ext]",
+        // },
+      },
+      {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
       },

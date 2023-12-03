@@ -6,10 +6,11 @@ import {
   Menu,
   Transition,
 } from '@headlessui/react';
-import { MenuIcon, XIcon } from '@heroicons/react/outline';
+// import { MenuIcon, XIcon } from '@heroicons/react/24/outline';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth } from '../../firebase/clientApp';
 import { useUser } from './user-context';
+import { Toaster } from 'sonner';
 
 function classNames(classes:any) {
   return classes.filter(Boolean).join(' ');
@@ -17,8 +18,9 @@ function classNames(classes:any) {
 
 function Layout({ children }:{children: any}) {
   // Google Auth (needs to be enabled in Firebase Console - https://console.firebase.google.com)
-  const googleAuthProvider = new GoogleAuthProvider();
   const { user } = useUser();
+
+  console.log(user);
 
   return (
     <div className="h-screen overflow-hidden bg-gray-600 dark:bg-background flex flex-col justify-center">
@@ -94,6 +96,7 @@ function Layout({ children }:{children: any}) {
       </Popover> */}
 
       {children}
+      <Toaster richColors position="top-right" />
 
     </div>
   );
