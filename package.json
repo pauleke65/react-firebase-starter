@@ -8,6 +8,7 @@
     "start": "webpack serve --mode development",
     "emulators": "firebase emulators:start --import=mock-data --export-on-exit",
     "build": "webpack --mode production",
+    "netlify-deploy": "webpack --mode production && cp netlify.toml dist/ && netlify deploy --dir=dist/ --prod",
     "test": "mocha --exit"
   },
   "keywords": [],

@@ -17,3 +17,6 @@ dist/
 firestore-debug.log*
 ui-debug.log*
 firebase-debug.log*
+
+# Local Netlify folder
+.netlify

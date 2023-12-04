@@ -11,8 +11,17 @@ import { auth, db, storage } from "../../../firebase/clientApp";
 import { toast } from "sonner";
 import Dropzone, { Accept } from "react-dropzone";
 
-import { ref, uploadBytes } from "firebase/storage";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { ref, uploadBytes, getBlob } from "firebase/storage";
+import {
+  Unsubscribe,
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { useUser } from "../user-context";
 
@@ -110,6 +119,7 @@ function ExerciseModal({
   data?: any;
 }) {
   let [isLoading, setIsLoading] = useState(false);
+  let [loadingVideo, setLoadingVideo] = useState(false);
   const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
   const [hasVideo, setHasVideo] = useState(false);
   const { user } = useUser();
@@ -121,6 +131,8 @@ function ExerciseModal({
   const onClose = () => {
     setSelectedVideoFile(null);
     setHasVideo(false);
+    data = null;
+    setLoadingVideo(false);
 
     closeModal();
   };
@@ -155,7 +167,8 @@ function ExerciseModal({
           name: user.displayName,
           email: user.email,
         },
-        videoUrl: result.ref.fullPath,
+        videoUrl: result?.ref?.fullPath ?? data.videoUrl,
+        createdAt: Date.now(),
       });
 
       console.log(exerciseState);
@@ -174,11 +187,47 @@ function ExerciseModal({
   };
 
   const updateExercise = async () => {
-    setIsLoading(true);
-    console.log(exerciseState);
+    try {
+      setIsLoading(true);
+
+      let result = null;
+      if (videoChanged) {
+        result = await uploadVideo();
+      }
+      console.log("DATA IS", data);
+
+      await setDoc(
+        doc(db, "amtapExercises", data.id),
+        {
+          exerciseName: exerciseState["exerciseName"],
+          description: exerciseState["description"],
+          owner: {
+            id: user.uid,
+            name: user.displayName,
+            email: user.email,
+          },
+          videoUrl: result?.ref.fullPath ?? data.videoUrl,
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      console.log(exerciseState);
+      setIsLoading(false);
+      closeModal();
+    } catch (e) {
+      console.log(e);
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      } else {
+        toast.error(e);
+      }
+    }
+
     setIsLoading(false);
-    closeModal();
   };
+
+  let videoChanged = false;
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Do something with the files
@@ -187,6 +236,7 @@ function ExerciseModal({
       setSelectedVideoFile(acceptedFiles[0]);
       setHasVideo(true);
       console.log(selectedVideoFile);
+      videoChanged = true;
     }
   }, []);
 
@@ -214,6 +264,41 @@ function ExerciseModal({
 
     return uploadedFile;
   };
+
+  let hasFetchedVideo = false;
+
+  const downloadVideo = async () => {
+    console.log("Downloading Video");
+    if (hasFetchedVideo) return;
+    setLoadingVideo(true);
+    hasFetchedVideo = true;
+
+    try {
+      const storageRef = ref(storage, data.videoUrl);
+
+      const fileBlob = await getBlob(storageRef);
+
+      setSelectedVideoFile(new File([fileBlob], "video.mp4"));
+
+      setHasVideo(true);
+
+      // await new Promise((resolve) => setTimeout(resolve, 4000));
+    } catch (e) {
+      console.log(e);
+      if (e instanceof FirebaseError) {
+        toast.error(e.message);
+      } else {
+        toast.error(e);
+      }
+    }
+
+    setLoadingVideo(false);
+  };
+
+  useEffect(() => {
+    console.log(isUpdate);
+    if (isUpdate && isOpen) downloadVideo();
+  }, [isOpen]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -258,54 +343,64 @@ function ExerciseModal({
                   className="mt-8 space-y-6 flex flex-col"
                   onSubmit={handleSubmit}
                 >
-                  <Dropzone
-                    onDrop={onDrop}
-                    accept={acceptedFileType}
-                    onDropRejected={onDropRejected}
-                    minSize={0}
-                    maxSize={5242880}
-                    maxFiles={1}
-                  >
-                    {({
-                      getRootProps,
-                      getInputProps,
-                      isDragActive,
-                      isDragReject,
-                    }) => (
-                      <div className="w-full h-64 self-center flex justify-center items-center rounded-2xl relative border  border-purple">
-                        <div className="bg-red-200">
-                          {selectedVideoFile != null && (
-                            <video
-                              className=" z-10 absolute bottom-0  left-0 w-full h-64  rounded-2xl"
-                              controls
-                            >
-                              <source
-                                src={URL.createObjectURL(selectedVideoFile)}
-                              />
-                            </video>
-                          )}
-                        </div>
-                        <div
-                          {...getRootProps()}
-                          className={`z-20 focus:outline-none bg-purple rounded-full py-1 px-3 cursor-pointer absolute ${
-                            hasVideo ? "opacity-50" : ""
-                          } `}
-                        >
-                          <input {...getInputProps()} />
+                  {loadingVideo ? (
+                    <div className=" text-white w-full h-64 self-center flex justify-center items-center rounded-2xl relative border  border-purple">
+                      <CogIcon
+                        className="block h-8 w-8 animate-spin mr-2"
+                        aria-hidden="true"
+                      />
+                      <p>Loading Video...</p>
+                    </div>
+                  ) : (
+                    <Dropzone
+                      onDrop={onDrop}
+                      accept={acceptedFileType}
+                      onDropRejected={onDropRejected}
+                      minSize={0}
+                      maxSize={5242880}
+                      maxFiles={1}
+                    >
+                      {({
+                        getRootProps,
+                        getInputProps,
+                        isDragActive,
+                        isDragReject,
+                      }) => (
+                        <div className="w-full h-64 self-center flex justify-center items-center rounded-2xl relative border  border-purple">
+                          <div className="bg-red-200">
+                            {selectedVideoFile != null && (
+                              <video
+                                className=" z-10 absolute bottom-0  left-0 w-full h-64  rounded-2xl"
+                                controls
+                              >
+                                <source
+                                  src={URL.createObjectURL(selectedVideoFile)}
+                                />
+                              </video>
+                            )}
+                          </div>
+                          <div
+                            {...getRootProps()}
+                            className={`z-20 focus:outline-none bg-purple rounded-full py-1 px-3 cursor-pointer absolute ${
+                              hasVideo ? "opacity-50" : ""
+                            } `}
+                          >
+                            <input {...getInputProps()} />
 
-                          <p className=" text-white">
-                            {isDragReject
-                              ? "File type not accepted, Only MP4 files are accepted"
-                              : isDragActive
-                              ? "Drop Video Here"
-                              : hasVideo
-                              ? "Drag/Click to Replace Video (5MB Max)"
-                              : "Drag/Click to Upload a Video (5MB Max)"}
-                          </p>
-                        </div>{" "}
-                      </div>
-                    )}
-                  </Dropzone>
+                            <p className=" text-white">
+                              {isDragReject
+                                ? "File type not accepted, Only MP4 files are accepted"
+                                : isDragActive
+                                ? "Drop Video Here"
+                                : hasVideo
+                                ? "Drag/Click to Replace Video (5MB Max)"
+                                : "Drag/Click to Upload a Video (5MB Max)"}
+                            </p>
+                          </div>{" "}
+                        </div>
+                      )}
+                    </Dropzone>
+                  )}
 
                   <div className="-space-y-px">
                     {fields.map((field) => (
@@ -440,20 +535,25 @@ function Dashboard() {
   const { user } = useUser();
   const navigate = useNavigate();
 
+  let unsubscribe: Unsubscribe;
+
   const getExercises = async () => {
     try {
       const exercisesRef = collection(db, "amtapExercises");
 
-      const q = query(exercisesRef, where("owner.id", "==", user.uid));
-
-      const querySnapshot = await getDocs(q);
-
-      setExercises(
-        querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Exercise[]
+      const q = query(
+        exercisesRef
+        // where("owner.id", "==", user.uid)
       );
+
+      unsubscribe = onSnapshot(q, (querySnapshot) => {
+        setExercises(
+          querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Exercise[]
+        );
+      });
     } catch (e) {
       console.log(e);
       if (e instanceof FirebaseError) {
@@ -473,6 +573,10 @@ function Dashboard() {
     } else {
       getExercises();
     }
+
+    return () => {
+      unsubscribe();
+    };
   }, [user]);
 
   return (
